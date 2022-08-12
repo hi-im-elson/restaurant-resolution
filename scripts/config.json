@@ -1,0 +1,9 @@
+{
+    "RAW_CRM_PATH": "../data/crm/raw/loma_crm_data.csv",
+    "RAW_TLE_PATH": "../data/tle/raw/tle_market_data.csv",
+    "PROCESSED_CRM_PATH": "../data/crm/processed/processed.parquet",
+    "PROCESSED_TLE_PATH": "../data/tle/processed/processed.parquet",
+    "COMPOUNDS_CRM_PATH": "../data/crm/processed/compounds.parquet",
+    "COMPOUNDS_TLE_PATH": "../data/tle/processed/compounds.parquet",
+    "RESOLVED_PATH": "../data/resolver.parquet"
+}
