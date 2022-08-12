@@ -1,9 +1,10 @@
 {
-    "RAW_CRM_PATH": "../data/crm/raw/loma_crm_data.csv",
-    "RAW_TLE_PATH": "../data/tle/raw/tle_market_data.csv",
-    "PROCESSED_CRM_PATH": "../data/crm/processed/processed.parquet",
-    "PROCESSED_TLE_PATH": "../data/tle/processed/processed.parquet",
-    "COMPOUNDS_CRM_PATH": "../data/crm/processed/compounds.parquet",
-    "COMPOUNDS_TLE_PATH": "../data/tle/processed/compounds.parquet",
-    "RESOLVED_PATH": "../data/resolver.parquet"
+    "RAW_CRM_PATH": "data/crm/raw/loma_crm_data.csv",
+    "RAW_TLE_PATH": "data/tle/raw/tle_market_data.csv",
+    "PROCESSED_CRM_PATH": "data/crm/processed/parsed.parquet",
+    "PROCESSED_TLE_PATH": "data/tle/processed/parsed.parquet",
+    "COMPOUNDS_CRM_PATH": "data/crm/processed/compounds.parquet",
+    "COMPOUNDS_TLE_PATH": "data/tle/processed/compounds.parquet",
+    "FULL_LINKED_PATH": "data/linked/full.parquet",
+    "PROSPECTS_EXPORT_PATH": "data/linked/prospectsExport.parquet"
 }
