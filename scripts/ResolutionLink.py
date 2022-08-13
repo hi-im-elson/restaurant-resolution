@@ -1,3 +1,9 @@
+#---- Notes ----#
+# Part 3 of Resolution
+# This script is used to combine the compounds from both datasets to create a single view of the entity
+# All compounds are used in this example but removing compounds from the LAX group would reduce the number of matches while increasing the confidence of matches
+#---- Notes ----#
+
 import os
 import json
 import re

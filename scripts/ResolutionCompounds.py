@@ -1,3 +1,10 @@
+#---- Notes ----#
+# Part 2 of Resolution
+# This script is used to extract joining compounds from the business name and address fields to resolve between datasets
+# Compounds are concatenations of various fields or parsed elements of fields used to find commonality between datasets
+# Compound strength is determined by the specificty of the component elements e.g. first name + last name will be less specific than first name + last name + date of birth
+#---- Notes ----#
+
 import os
 import json
 import re

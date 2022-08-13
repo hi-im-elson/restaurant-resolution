@@ -1,3 +1,12 @@
+#---- Notes ----#
+# Part 1 of Resolution
+# This script is used to convert the raw csv files into a consistent document data model
+# Part of the model includes cleansing business names using regex and other mechanical string transformation methods
+# Addresses were not cleansed further as quality was already good as is
+# An assumption was made that each location will make it's own decision regarding Loma (e.g. no centralized procurement in place to contact leads)
+# If the above assumption were to be removed, the document data model would have addresses as a subclass to the business name
+#---- Notes ----#
+
 import os
 import json
 import re
@@ -5,8 +14,8 @@ import findspark
 findspark.init(os.getenv("SPARK_HOME"))
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, struct, lit, upper, udf, when, desc, array, substring, concat_ws
-from pyspark.sql.functions import regexp_replace, concat, split, element_at, trim, array_distinct
+from pyspark.sql.functions import col, struct, lit, upper, array, concat_ws
+from pyspark.sql.functions import regexp_replace, concat, trim, array_distinct
 from pyspark.sql.types import *
 
 #0 Initiate spark session and read config variables
@@ -66,8 +75,8 @@ mappedTLE = (
 )
 
 ## Create parsed name field
-businessStopwordRegex = "( INC| LTD | CANADA | CO)"
-foodStopwordRegex = "( RESTAURANT| BAR| CAFE| GRILL| HOUSE| KITCHEN)"
+businessStopwordRegex = "( INC| LTD | CANADA | CO)" ## Regex pattern to remove common business endings
+foodStopwordRegex = "( RESTAURANT| BAR| CAFE| GRILL| HOUSE| KITCHEN)" ## Regex pattern to remove restaurant endings
 
 def parseBusinessName(df):
     return (
