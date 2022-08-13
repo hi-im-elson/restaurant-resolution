@@ -1,8 +1,10 @@
 import os
 import json
-import re
-from typing import Container
+import random
 import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.graph_objects import Layout
 import streamlit as st
 st.set_page_config(layout="wide")
 
@@ -16,13 +18,6 @@ with open("scripts/config.json") as jsonFile:
 crmDF = pd.read_csv(RAW_CRM_PATH)
 tleDF = pd.read_csv(RAW_TLE_PATH)
 analysisDF = pd.read_parquet(PRESENCE_ANALYSIS_PATH)
-# colours = {
-#     "black": "1C1C1C",
-#     "dark-grey": "6F7878",
-#     "light-grey": "B0B0B0",
-#     "yellow": "FEB32E",
-#     "blue": "161B33",
-# }
 
 # TO DO / FUTURE
 ## Explore chains for uniform sales
@@ -54,7 +49,7 @@ This "memo" is structured into three pages:
 
 
 st.header("Market Presence Analysis")
-st.subheader("Q1: Penetration in the Toronto Region")
+st.subheader("Overall Penetration in the Toronto Region")
 
 customerCount = crmDF[crmDF["account_type"].str.contains("CUSTOMER") & crmDF["province_state"].str.contains("ON")].shape[0]
 marketCount = tleDF.shape[0]
@@ -90,14 +85,27 @@ with st.sidebar:
 
 
     with st.expander("Financial Analysis Paramaters"):
-        st.write("Params")
+        averageRevenuePerCustomer = st.slider(label="Average revenue per customer ($):",
+                                            min_value=30,
+                                            max_value=100,
+                                            value=65)
+
+        prospectCostOfAcquisition = st.number_input(label="Cost of converting one prospect ($):",
+                                                    min_value=0,
+                                                    max_value=100,
+                                                    value=2)
+
+        nonProspectCostOfAcquisition = st.number_input(label="Cost of converting one non-prospect ($):",
+                                                    min_value=0,
+                                                    max_value=100,
+                                                    value=5)
 
 # leftColumn, rightColumn = st.columns(2)
 # with leftColumn:
 # with rightColumn:
 #     st.write("Text")
 
-st.subheader("Q2: Performance by Breakdown")
+st.subheader("Performance by Breakdown")
 st.caption(f"### Current selection: {groupBySelector.upper()}")
 
 breakdownObservations = {
@@ -136,9 +144,54 @@ with st.expander("Notes:"):
     """)
 
 
-
-
-st.header("Financial Analysis")
 st.subheader("Revenue Forecast")
 
-st.subheader("Investment Consideration")
+
+breakdownDF["totalKey"] = "TOTAL"
+totalDF = breakdownDF.groupby("totalKey").agg({"customer": "sum", "prospect": "sum","market": "sum"})
+
+
+# projectionDF = pd.concat([breakdownDF.sort_index(), totalDF]).drop(columns="totalKey")
+projectionDF = breakdownDF
+projectionDF = projectionDF.drop(columns=["currentPenetration", "likelyPenetration", "potentialPenetration"])
+projectionDF["prospectsConverted"] = round((prospectConversion/100)*projectionDF["prospect"], 0)
+projectionDF["prospectsConverted"] = projectionDF["prospectsConverted"].apply(lambda x: int(x) if x > 0 else int(0))
+projectionDF["prospectsConvertedIncome"] = projectionDF["prospectsConverted"] * (averageRevenuePerCustomer - prospectCostOfAcquisition)
+projectionDF["prospectsConvertedIncome"] = projectionDF["prospectsConvertedIncome"].astype(int)
+projectionDF["nonProspectsConverted"] = round(((nonProspectConversion/100)*(projectionDF["market"]-projectionDF["customer"]-projectionDF["prospect"])), 0)
+projectionDF["nonProspectsConverted"] = projectionDF["nonProspectsConverted"].apply(lambda x: int(x) if x > 0 else int(0))
+projectionDF["nonProspectsConvertedIncome"] = projectionDF["nonProspectsConverted"] * (averageRevenuePerCustomer - nonProspectCostOfAcquisition)
+projectionDF["nonProspectsConvertedIncome"] = projectionDF["nonProspectsConvertedIncome"].astype(int)
+projectionDF["totalConverted"] = projectionDF["nonProspectsConverted"] + projectionDF["prospectsConverted"]
+projectionDF["totalConvertedIncome"] = projectionDF["nonProspectsConvertedIncome"] + projectionDF["prospectsConvertedIncome"]
+
+colours = {
+    "black": "#1C1C1C",
+    "dark-grey": "#6F7878",
+    "light-grey": "#B0B0B0",
+    "yellow": "#FEB32E",
+    "blue": "#161B33",
+}
+
+fig = go.Figure(layout=Layout(
+    autosize=True,
+    plot_bgcolor="rgba(0,0,0,0)", 
+    title="Forecast of income by prospect status",
+    legend={
+        "orientation": "h",
+        "yanchor": "bottom",
+        "y": -0.5
+    }
+    ))
+fig.add_trace(go.Bar(x=projectionDF.index, y=projectionDF.totalConvertedIncome, name="totalConvertedIncome", marker_color=colours["yellow"]))
+fig.add_trace(go.Bar(x=projectionDF.index, y=projectionDF.nonProspectsConvertedIncome, name="nonProspectsConvertedIncome", marker_color=colours["dark-grey"]))
+fig.add_trace(go.Bar(x=projectionDF.index, y=projectionDF.prospectsConvertedIncome, name="prospectsConvertedIncome", marker_color=colours["black"]))
+fig.update_xaxes(categoryorder="total descending")
+
+st.plotly_chart(fig, use_container_width=True)
+
+st.caption(f"""
+Average revenue per customer: \${averageRevenuePerCustomer} \n
+Cost of acquisition (Prospect): \${prospectCostOfAcquisition} \n
+Cost of acquisition (Non-prospect): \${nonProspectCostOfAcquisition} \n
+""")
