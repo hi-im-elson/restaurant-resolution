@@ -7,5 +7,6 @@
     "COMPOUNDS_TLE_PATH": "data/tle/processed/compounds.parquet",
     "FULL_LINKED_PATH": "data/linked/full.parquet",
     "PROSPECTS_EXPORT_PATH": "data/linked/prospectsExport.parquet",
+    "PROSPECTS_EXPORT_CSV": "data/linked/prospectsExport.csv",
     "PRESENCE_ANALYSIS_PATH": "data/analysis/presence.parquet"
 }
