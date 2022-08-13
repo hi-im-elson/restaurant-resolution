@@ -19,19 +19,6 @@ crmDF = pd.read_csv(RAW_CRM_PATH)
 tleDF = pd.read_csv(RAW_TLE_PATH)
 analysisDF = pd.read_parquet(PRESENCE_ANALYSIS_PATH)
 
-# TO DO / FUTURE
-## Explore chains for uniform sales
-## Add census data at the FSA level
-## Add widget for market pen
-## Add widget for estimated revenue
-## Add widget for DCF and IRR
-
-# Structure
-## Overview
-## Market Presence Analysis
-## Financial Analysis
-## Notes, Considerations and Next Steps
-
 
 st.title("Birch Hill - Loma Restaurant Linens Co.")
 
