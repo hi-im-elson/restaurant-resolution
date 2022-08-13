@@ -23,7 +23,7 @@ compoundsCRM = pd.read_parquet(COMPOUNDS_CRM_PATH)
 fullLinkedCRM = pd.read_parquet(FULL_LINKED_PATH)
 tleProspectsCRM = pd.read_parquet(PROSPECTS_EXPORT_PATH)
 
-st.header("Entity Resolution")
+st.title("Entity Resolution")
 st.write("""
 This entity resolution approach follows the following steps to identify common entities across datasets with different formatting:
 

@@ -38,8 +38,8 @@ This "memo" is structured into three pages:
 st.header("Market Presence Analysis")
 st.subheader("Overall Penetration in the Toronto Region")
 
-customerCount = crmDF[crmDF["account_type"].str.contains("CUSTOMER") & crmDF["province_state"].str.contains("ON")].shape[0]
-marketCount = tleDF.shape[0]
+customerCount = crmDF[crmDF["account_type"].str.contains("CUSTOMER") & crmDF["city"].str.contains("Toronto")].shape[0]
+marketCount = tleDF[tleDF["tle_city"].str.contains("TORONTO")].shape[0]
 
 st.markdown(f"""
 Loma's overall market presence is currently **{round((customerCount/marketCount)*100, 2)}%**. \n
