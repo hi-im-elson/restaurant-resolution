@@ -29,13 +29,14 @@ with open("scripts/config.json") as jsonFile:
 crmDF = spark.read.option("header", True).option("inferSchema", True).csv(RAW_CRM_PATH)
 tleDF = spark.read.option("header", True).option("inferSchema", True).csv(RAW_TLE_PATH)
 
-print(crmDF.columns)
-print(tleDF.columns)
+# print(crmDF.columns)
+# print(tleDF.columns)
 
 #--- Overall presence
-customerCount = crmDF.filter(col("account_type").contains("CUSTOMER")).count()
-marketCount = tleDF.count()
-print(f"Loma's penetration in the market is: {customerCount}/{marketCount} ({round((customerCount/marketCount)*100, 2)}%)")
+# crmDF.groupBy("province_state").count().show()
+# customerCount = crmDF.filter(col("account_type").contains("CUSTOMER")).count()
+# marketCount = tleDF.count()
+# print(f"Loma's penetration in the market is: {customerCount}/{marketCount} ({round((customerCount/marketCount)*100, 2)}%)")
 
 #--- City
 cityDF = (
@@ -198,6 +199,9 @@ exportTLE = (
     .withColumnRenamed("count", "market")
 )
 
-exportDF = exportCRM.join(exportTLE, ["fsa", "city", "isFSR", "estimatedAnnualRevenue", "numberOfEmployees"], "inner")
+exportDF = exportCRM.join(exportTLE, ["fsa", "city", "isFSR", "estimatedAnnualRevenue", "numberOfEmployees"], "full")
+
+# exportDF.groupBy("city").agg(f.sum("customer"),f.sum("prospect"),f.sum("market")).show(truncate=False)
+# exportDF.groupBy("city").show(truncate=False)
 
 exportDF.write.mode("overwrite").parquet(PRESENCE_ANALYSIS_PATH)
