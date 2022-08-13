@@ -6,5 +6,6 @@
     "COMPOUNDS_CRM_PATH": "data/crm/processed/compounds.parquet",
     "COMPOUNDS_TLE_PATH": "data/tle/processed/compounds.parquet",
     "FULL_LINKED_PATH": "data/linked/full.parquet",
-    "PROSPECTS_EXPORT_PATH": "data/linked/prospectsExport.parquet"
+    "PROSPECTS_EXPORT_PATH": "data/linked/prospectsExport.parquet",
+    "PRESENCE_ANALYSIS_PATH": "data/analysis/presence.parquet"
 }
