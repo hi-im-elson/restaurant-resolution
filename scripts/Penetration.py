@@ -1,4 +1,5 @@
 import os
+import json
 import findspark
 findspark.init(os.getenv("SPARK_HOME"))
 
@@ -10,11 +11,14 @@ spark = SparkSession \
                 .appName("Penetration.py") \
                 .getOrCreate()
 
-CRM_PATH = "../data/crm/raw/loma_crm_data.csv"
-TLE_PATH = "../data/tle/raw/tle_market_data.csv"
+with open("scripts/config.json") as jsonFile:
+    configPath = json.load(jsonFile)
 
-crmDF = spark.read.option("header", True).option("inferSchema", True).csv(CRM_PATH)
-tleDF = spark.read.option("header", True).option("inferSchema", True).csv(TLE_PATH)
+    RAW_CRM_PATH = configPath["RAW_CRM_PATH"]
+    RAW_TLE_PATH = configPath["RAW_TLE_PATH"]
+
+crmDF = spark.read.option("header", True).option("inferSchema", True).csv(RAW_CRM_PATH)
+tleDF = spark.read.option("header", True).option("inferSchema", True).csv(RAW_TLE_PATH)
 
 def getPenetration():
     """
@@ -41,3 +45,8 @@ def getPenetration():
     print(f"{customerCount/restaurantCount}")
 
 getPenetration()
+
+print(crmDF.columns)
+print(tleDF.columns)
+crmDF.groupBy("city").count().show()
+tleDF.groupBy("tle_city").count().show()
