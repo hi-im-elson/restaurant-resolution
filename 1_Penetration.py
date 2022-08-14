@@ -20,7 +20,7 @@ tleDF = pd.read_csv(RAW_TLE_PATH)
 analysisDF = pd.read_parquet(PRESENCE_ANALYSIS_PATH)
 
 
-st.title("Birch Hill - Loma Restaurant Linens Co.")
+st.title("Elson Lim - Loma Restaurant Linens Co.")
 
 st.header("Introduction")
 st.write("""
@@ -33,8 +33,6 @@ This "memo" is structured into three pages:
     Page 3: Assumptions, analysis and additional context for my decisions and findings during this case.
 """)
 
-
-
 st.header("Market Presence Analysis")
 st.subheader("Overall Penetration in the Toronto Region")
 
@@ -43,10 +41,8 @@ marketCount = tleDF[tleDF["tle_city"].str.contains("TORONTO")].shape[0]
 
 st.markdown(f"""
 Loma's overall market presence is currently **{round((customerCount/marketCount)*100, 2)}%**. \n
-**{customerCount}** distinct rows from the CRM dataset with *account_type='CUSTOMER'* and *province_state='ON'*  \n
-**{marketCount}** distinct rows from TLE dataset""")
-
-
+**{customerCount}** distinct rows from the CRM dataset with *account_type='CUSTOMER'* and *city='Toronto'*  \n
+**{marketCount}** distinct rows from TLE dataset with *tle_city='TORONTO'*""")
 
 with st.sidebar:
     with st.expander("Market Presence Parameters"):
@@ -87,11 +83,6 @@ with st.sidebar:
                                                     max_value=100,
                                                     value=5)
 
-# leftColumn, rightColumn = st.columns(2)
-# with leftColumn:
-# with rightColumn:
-#     st.write("Text")
-
 st.subheader("Performance by Breakdown")
 st.caption(f"### Current selection: {groupBySelector.upper()}")
 
@@ -130,15 +121,11 @@ with st.expander("Notes:"):
         potentialPenetration = (customer + prospectConversion * prospect + nonProspectConversion * (market - customer - prospect)) / market
     """)
 
-
 st.subheader("Revenue Forecast")
-
 
 breakdownDF["totalKey"] = "TOTAL"
 totalDF = breakdownDF.groupby("totalKey").agg({"customer": "sum", "prospect": "sum","market": "sum"})
 
-
-# projectionDF = pd.concat([breakdownDF.sort_index(), totalDF]).drop(columns="totalKey")
 projectionDF = breakdownDF
 projectionDF = projectionDF.drop(columns=["currentPenetration", "likelyPenetration", "potentialPenetration"])
 projectionDF["prospectsConverted"] = round((prospectConversion/100)*projectionDF["prospect"], 0)
