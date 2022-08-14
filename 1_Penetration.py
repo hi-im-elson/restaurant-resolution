@@ -1,11 +1,9 @@
-import os
 import json
-import random
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 from plotly.graph_objects import Layout
 import streamlit as st
+
 st.set_page_config(layout="wide")
 
 with open("scripts/config.json") as jsonFile:
@@ -18,7 +16,6 @@ with open("scripts/config.json") as jsonFile:
 crmDF = pd.read_csv(RAW_CRM_PATH)
 tleDF = pd.read_csv(RAW_TLE_PATH)
 analysisDF = pd.read_parquet(PRESENCE_ANALYSIS_PATH)
-
 
 st.title("Elson Lim - Loma Restaurant Linens Co.")
 
@@ -40,38 +37,38 @@ customerCount = crmDF[crmDF["account_type"].str.contains("CUSTOMER") & crmDF["ci
 marketCount = tleDF[tleDF["tle_city"].str.contains("TORONTO")].shape[0]
 
 st.markdown(f"""
-Loma's overall market presence is currently **{round((customerCount/marketCount)*100, 2)}%**. \n
+Loma's overall market presence is currently **{round((customerCount / marketCount) * 100, 2)}%**. \n
 **{customerCount}** distinct rows from the CRM dataset with *account_type='CUSTOMER'* and *city='Toronto'*  \n
 **{marketCount}** distinct rows from TLE dataset with *tle_city='TORONTO'*""")
 
 with st.sidebar:
     with st.expander("Market Presence Parameters"):
         groupBySelections = ["city", "isFSR", "estimatedAnnualRevenue", "numberOfEmployees", "fsa"]
-        groupBySelector = st.selectbox(label="Presence by:", 
+        groupBySelector = st.selectbox(label="Presence by:",
                                        index=0,
                                        options=groupBySelections)
-                                       
+
         prospectConversion = st.slider(label="Prospects converted (%):",
                                        min_value=0,
                                        max_value=100,
                                        value=50)
 
         nonProspectConversion = st.slider(label="Non-prospects converted (%):",
-                                            min_value=0,
-                                            max_value=100,
-                                            value=50)
+                                          min_value=0,
+                                          max_value=100,
+                                          value=50)
 
-        sortBySelections = ["customer", "prospect", "market", "currentPenetration", "likelyPenetration", "potentialPenetration"]
-        sortBySelector = st.selectbox(label="Sort table by:", 
-                                       index=0,
-                                       options=sortBySelections)
-
+        sortBySelections = ["customer", "prospect", "market", "currentPenetration", "likelyPenetration",
+                            "potentialPenetration"]
+        sortBySelector = st.selectbox(label="Sort table by:",
+                                      index=0,
+                                      options=sortBySelections)
 
     with st.expander("Financial Analysis Paramaters"):
         averageRevenuePerCustomer = st.slider(label="Average revenue per customer ($):",
-                                            min_value=30,
-                                            max_value=100,
-                                            value=65)
+                                              min_value=30,
+                                              max_value=100,
+                                              value=65)
 
         prospectCostOfAcquisition = st.number_input(label="Cost of converting one prospect ($):",
                                                     min_value=0,
@@ -79,9 +76,9 @@ with st.sidebar:
                                                     value=2)
 
         nonProspectCostOfAcquisition = st.number_input(label="Cost of converting one non-prospect ($):",
-                                                    min_value=0,
-                                                    max_value=100,
-                                                    value=5)
+                                                       min_value=0,
+                                                       max_value=100,
+                                                       value=5)
 
 st.subheader("Performance by Breakdown")
 st.caption(f"### Current selection: {groupBySelector.upper()}")
@@ -91,9 +88,8 @@ breakdownObservations = {
     Their expansion strategy appears to be focused on acquiring customers out-of-province with more than a third of their prospects being located in Quebec and Halifax.
     However, a large untapped market exists in Scarborough which could be their third largest market assuming a 1/3 conversion rate.""",
 
-    "isFSR": """Understandably so, most of Loma's customer base and prospects fall under some category of Full Service Restaurants (FSR). 
+    "isFSR": """Understandably so, most of Loma's customer base and prospects fall under some category of Full Service Restaurants (FSR). Loma already has 42% of this segment as an existing customer and another 33% identified as prospects.   
     An opportunity that might be present in this category is the Quick Service Restaurants where uniforms are still present. """,
-
     "estimatedAnnualRevenue": """Loma appears to have a strong foothold in amongst smaller operators (<\$500K) and the most successful players (\$2.5M+). Yet a significant opportunity exists for Loma in the mid-market category (\$1M - $2.5M) with over 3K TLE locations being neither a Loma customer nor prospect.""",
     "numberOfEmployees": "Data quality issues with over 50% missing values in this field prevents further analysis at this time.",
     "fsa": """No analysis has been performed at the Forward Station Area just yet. However, there is an opportunity to better understand the market and its demographics using this
@@ -102,16 +98,18 @@ breakdownObservations = {
 
 st.markdown(breakdownObservations[groupBySelector])
 
-breakdownDF = analysisDF.groupby(groupBySelector).agg({"customer": "sum", "prospect": "sum","market": "sum"})
+breakdownDF = analysisDF.groupby(groupBySelector).agg({"customer": "sum", "prospect": "sum", "market": "sum"})
 breakdownDF["customer"] = breakdownDF["customer"].astype(int)
 breakdownDF["prospect"] = breakdownDF["prospect"].astype(int)
 breakdownDF["market"] = breakdownDF["market"].astype(int)
 breakdownDF["currentPenetration"] = breakdownDF["customer"] / breakdownDF["market"]
-breakdownDF["likelyPenetration"] = (breakdownDF["customer"] + (prospectConversion/100)*breakdownDF["prospect"]) / breakdownDF["market"]
-breakdownDF["potentialPenetration"] = breakdownDF["likelyPenetration"] + ((nonProspectConversion/100)*(breakdownDF["market"]-breakdownDF["customer"]-breakdownDF["prospect"])/breakdownDF["market"])
+breakdownDF["likelyPenetration"] = (breakdownDF["customer"] + (prospectConversion / 100) * breakdownDF["prospect"]) / \
+                                   breakdownDF["market"]
+breakdownDF["potentialPenetration"] = breakdownDF["likelyPenetration"] + ((nonProspectConversion / 100) * (
+            breakdownDF["market"] - breakdownDF["customer"] - breakdownDF["prospect"]) / breakdownDF["market"])
 breakdownDF = breakdownDF.fillna(0)
 st.table(breakdownDF.sort_values(sortBySelector, ascending=False))
-with st.expander("Notes:"): 
+with st.expander("Notes:"):
     st.caption("""
         customer: account_type="CUSTOMER" in CRM dataset \n
         market: account_type="PROSPECT" in CRM dataset \n
@@ -124,20 +122,25 @@ with st.expander("Notes:"):
 st.subheader("Revenue Forecast")
 
 breakdownDF["totalKey"] = "TOTAL"
-totalDF = breakdownDF.groupby("totalKey").agg({"customer": "sum", "prospect": "sum","market": "sum"})
+totalDF = breakdownDF.groupby("totalKey").agg({"customer": "sum", "prospect": "sum", "market": "sum"})
 
 projectionDF = breakdownDF
 projectionDF = projectionDF.drop(columns=["currentPenetration", "likelyPenetration", "potentialPenetration"])
-projectionDF["prospectsConverted"] = round((prospectConversion/100)*projectionDF["prospect"], 0)
+projectionDF["prospectsConverted"] = round((prospectConversion / 100) * projectionDF["prospect"], 0)
 projectionDF["prospectsConverted"] = projectionDF["prospectsConverted"].apply(lambda x: int(x) if x > 0 else int(0))
-projectionDF["prospectsConvertedIncome"] = projectionDF["prospectsConverted"] * (averageRevenuePerCustomer - prospectCostOfAcquisition)
+projectionDF["prospectsConvertedIncome"] = projectionDF["prospectsConverted"] * (
+            averageRevenuePerCustomer - prospectCostOfAcquisition)
 projectionDF["prospectsConvertedIncome"] = projectionDF["prospectsConvertedIncome"].astype(int)
-projectionDF["nonProspectsConverted"] = round(((nonProspectConversion/100)*(projectionDF["market"]-projectionDF["customer"]-projectionDF["prospect"])), 0)
-projectionDF["nonProspectsConverted"] = projectionDF["nonProspectsConverted"].apply(lambda x: int(x) if x > 0 else int(0))
-projectionDF["nonProspectsConvertedIncome"] = projectionDF["nonProspectsConverted"] * (averageRevenuePerCustomer - nonProspectCostOfAcquisition)
+projectionDF["nonProspectsConverted"] = round(
+    ((nonProspectConversion / 100) * (projectionDF["market"] - projectionDF["customer"] - projectionDF["prospect"])), 0)
+projectionDF["nonProspectsConverted"] = projectionDF["nonProspectsConverted"].apply(
+    lambda x: int(x) if x > 0 else int(0))
+projectionDF["nonProspectsConvertedIncome"] = projectionDF["nonProspectsConverted"] * (
+            averageRevenuePerCustomer - nonProspectCostOfAcquisition)
 projectionDF["nonProspectsConvertedIncome"] = projectionDF["nonProspectsConvertedIncome"].astype(int)
 projectionDF["totalConverted"] = projectionDF["nonProspectsConverted"] + projectionDF["prospectsConverted"]
-projectionDF["totalConvertedIncome"] = projectionDF["nonProspectsConvertedIncome"] + projectionDF["prospectsConvertedIncome"]
+projectionDF["totalConvertedIncome"] = projectionDF["nonProspectsConvertedIncome"] + projectionDF[
+    "prospectsConvertedIncome"]
 
 colours = {
     "black": "#1C1C1C",
@@ -149,14 +152,14 @@ colours = {
 
 fig = go.Figure(layout=Layout(
     autosize=True,
-    plot_bgcolor="rgba(0,0,0,0)", 
+    plot_bgcolor="rgba(0,0,0,0)",
     title="Forecast of income by prospect status",
     legend={
         "orientation": "h",
         "yanchor": "bottom",
         "y": -0.5
     }
-    ))
+))
 fig.add_trace(go.Bar(x=projectionDF.index, y=projectionDF.totalConvertedIncome, name="totalConvertedIncome", marker_color=colours["yellow"]))
 fig.add_trace(go.Bar(x=projectionDF.index, y=projectionDF.nonProspectsConvertedIncome, name="nonProspectsConvertedIncome", marker_color=colours["dark-grey"]))
 fig.add_trace(go.Bar(x=projectionDF.index, y=projectionDF.prospectsConvertedIncome, name="prospectsConvertedIncome", marker_color=colours["black"]))
