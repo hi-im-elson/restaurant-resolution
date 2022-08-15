@@ -1,3 +1,4 @@
+pip install -r requirements.txt 
 docker container rm streamlit-container
 docker image rm streamlit-image 
 docker build . -t streamlit-image && \
