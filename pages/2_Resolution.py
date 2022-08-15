@@ -19,6 +19,7 @@ with open("scripts/config.json") as jsonFile:
 
 rawCRM = pd.read_csv(RAW_CRM_PATH) 
 processedCRM = pd.read_parquet(PROCESSED_CRM_PATH)
+processedTLE = pd.read_parquet(PROCESSED_TLE_PATH)
 compoundsCRM = pd.read_parquet(COMPOUNDS_CRM_PATH)
 fullLinkedCRM = pd.read_parquet(FULL_LINKED_PATH)
 tleProspectsCRM = pd.read_parquet(PROSPECTS_EXPORT_PATH)
@@ -72,3 +73,6 @@ sampleLinksDF["distanceAddress"] = sampleLinksDF.apply(lambda x: getAddressDista
 sampleLinksDF = sampleLinksDF[["crmBusinessNameDisplay", "tleBusinessNameDisplay","distanceName","crmAddressDisplay","tleAddressDisplay","distanceAddress","compounds"]]
 
 st.table(sampleLinksDF)
+st.caption(f"Number of CRM businesses resolved: {fullLinkedCRM.shape[0]}/{processedCRM.shape[0]} ({round((fullLinkedCRM.shape[0]/processedCRM.shape[0])*100, 2)}%)")
+
+
