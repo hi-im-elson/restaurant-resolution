@@ -6,8 +6,7 @@ import findspark
 findspark.init(os.getenv("SPARK_HOME"))
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, struct, lit, upper, udf, when, desc, array, explode, substring, round
-from pyspark.sql.functions import regexp_replace, concat, split, element_at, trim, array_distinct, collect_set, size
+from pyspark.sql.functions import col, regexp_replace, concat_ws, collect_set, explode
 from pyspark.sql.types import *
 
 #0 Initiate spark session and read config variables
@@ -38,7 +37,12 @@ exportDF = (
     .filter(col("crmIds").isNull())
     )
 
-exportDF.show()
-exportDF.write.mode("overwrite").parquet(PROSPECTS_EXPORT_PATH)
-exportDF.toPandas().to_csv(PROSPECTS_EXPORT_CSV, index=False)
-linkDF.toPandas().to_csv(LINK_EXPORT_CSV, index=False)
+# exportDF.show()
+# exportDF.write.mode("overwrite").parquet(PROSPECTS_EXPORT_PATH)
+# exportDF.toPandas().to_csv(PROSPECTS_EXPORT_CSV, index=False)
+# linkDF.toPandas().to_csv(LINK_EXPORT_CSV, index=False)
+(
+    linkDF
+    .select("tleId", "crmId", "crmBusinessNameDisplay", "tleBusinessNameDisplay", "tleAddressDisplay", "crmAddressDisplay", explode(col("compounds")).alias("compound"))
+    .select("tleId", "crmId", "crmBusinessNameDisplay", "tleBusinessNameDisplay", "tleAddressDisplay", "crmAddressDisplay", "compound.compoundName", "compound.compoundGroup", "compound.compoundValue")
+).toPandas().to_csv(LINK_EXPORT_CSV, index=False)
